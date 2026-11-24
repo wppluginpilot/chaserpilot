@@ -25,6 +25,9 @@ services:
         sync: false
       - key: SHOPIFY_APP_URL
         sync: false
+      # Comma-separated dev-store domains allowed to bypass billing while unlisted. Leave unset for review/production.
+      - key: BILLING_WAIVER_SHOPS
+        sync: false
       - key: LOG_LEVEL
         value: info
       # Daily digest email. Render's free web service blocks outbound SMTP, so use

@@ -122,3 +122,13 @@ describe("export", () => {
     expect(sizes).toEqual([500, 500, 100]);
   });
 });
+
+describe("assignees", () => {
+  it("a duplicate add is a friendly no-op", async () => {
+    const { addAssignee, listAssignees } = await import("../../server/services/settings.server");
+    const shop = await makeShop();
+    expect(await addAssignee(db, shop.id, "PAID", "Sam")).toEqual({ added: true });
+    expect(await addAssignee(db, shop.id, "PAID", " sam ")).toEqual({ added: false });
+    expect(await listAssignees(db, shop.id)).toHaveLength(1);
+  });
+});

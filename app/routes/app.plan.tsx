@@ -122,7 +122,7 @@ export default function Plan() {
               <s-stack direction="inline" gap="small" alignItems="center">
                 <s-heading>${PLAN_PRICE.toFixed(2)} a month</s-heading>
                 {isPaid ? <s-badge tone="success">Current plan</s-badge> : null}
-                {isPaid && d.test ? <s-badge>Test charge</s-badge> : null}
+                {isPaid && d.waived ? <s-badge>Development store, billing waived</s-badge> : isPaid && d.test ? <s-badge>Test charge</s-badge> : null}
               </s-stack>
               <s-text color="subdued">{MONTHLY_PLAN}: billed by Shopify every 30 days. Cancel any time from this page.</s-text>
               <s-stack direction="block" gap="small-300">

@@ -28,12 +28,15 @@ export async function listAssignees(db: Db, shopId: string) {
   return db.assignee.findMany({ where: { shopId }, orderBy: { name: "asc" } });
 }
 
-export async function addAssignee(db: Db, shopId: string, plan: PlanKey, name: string): Promise<void> {
+export async function addAssignee(db: Db, shopId: string, plan: PlanKey, name: string): Promise<{ added: boolean }> {
   if (plan !== "PAID") throw new UserError("Assignees are part of the Paid plan. Upgrade on the Plan page to use them.", 402);
   const clean = name.trim();
   if (!clean) throw new UserError("Type a name first.", 400, "assignee");
   if (clean.length > 60) throw new UserError("Names can be at most 60 characters.", 400, "assignee");
+  const existing = await db.assignee.findFirst({ where: { shopId, name: { equals: clean, mode: "insensitive" } } });
+  if (existing) return { added: false };
   await db.assignee.upsert({ where: { shopId_name: { shopId, name: clean } }, create: { shopId, name: clean }, update: {} });
+  return { added: true };
 }
 
 export async function removeAssignee(db: Db, shopId: string, id: string): Promise<void> {

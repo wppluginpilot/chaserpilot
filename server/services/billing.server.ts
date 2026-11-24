@@ -46,8 +46,26 @@ export function clearPlanCache(domain?: string) {
   else cache.clear();
 }
 
-export async function getPlanState(billing: BillingCheck, shop: Pick<Shop, "domain" | "billingWaived" | "freeSelectedAt">, now = Date.now()): Promise<PlanState> {
-  if (shop.billingWaived) return { plan: "PAID", test: true, waived: true, subscriptionId: null };
+/**
+ * Shops that may be given Paid without a Shopify charge, because Shopify
+ * refuses charges while the app is unlisted. Explicit allowlist from
+ * BILLING_WAIVER_SHOPS (comma-separated domains, default empty). Never applies
+ * to a reviewer's or a merchant's store.
+ */
+export function waiverShops(env: Record<string, string | undefined> = process.env): string[] {
+  return (env.BILLING_WAIVER_SHOPS ?? "")
+    .split(",")
+    .map((d) => d.trim().toLowerCase())
+    .filter(Boolean);
+}
+
+export function isWaiverShop(domain: string, env: Record<string, string | undefined> = process.env): boolean {
+  return waiverShops(env).includes(domain.trim().toLowerCase());
+}
+
+export async function getPlanState(billing: BillingCheck, shop: Pick<Shop, "domain" | "billingWaived" | "freeSelectedAt">, now = Date.now(), env: Record<string, string | undefined> = process.env): Promise<PlanState> {
+  // A stored flag alone never grants Paid: the store must be on the allowlist right now.
+  if (shop.billingWaived && isWaiverShop(shop.domain, env)) return { plan: "PAID", test: true, waived: true, subscriptionId: null };
   const hit = cache.get(shop.domain);
   if (hit && now - hit.at < CACHE_MS) return hit.value;
   const res = await billing.check({ plans: [MONTHLY_PLAN], isTest: CHECK_IS_TEST });
@@ -74,11 +92,15 @@ export function returnUrl(shopDomain: string): string {
 export type UpgradeResult = { confirmationUrl: string } | { waived: true } | { error: string };
 
 /** Starts the Paid plan: returns Shopify's approval URL for the client to open in the top window. */
-export async function startUpgrade(db: Db, admin: AdminGraphql, shop: Shop): Promise<UpgradeResult> {
+export async function startUpgrade(db: Db, admin: AdminGraphql, shop: Shop, env: Record<string, string | undefined> = process.env): Promise<UpgradeResult> {
   const result = await createSubscription(admin, { name: MONTHLY_PLAN, returnUrl: returnUrl(shop.domain), test: shop.devStore, price: PLAN_PRICE });
   if ("confirmationUrl" in result) return result;
   if (result.unlisted) {
-    // Shopify only allows billing once the app is public; until then only the developer's own stores can install.
+    if (!isWaiverShop(shop.domain, env)) {
+      log().warn({ shop: shop.domain }, "billing refused by Shopify and shop is not on the waiver allowlist");
+      return { error: "Shopify can't start a paid subscription for this store right now. Please try again later or contact support." };
+    }
+    // Shopify only allows billing once the app is public; only allowlisted developer stores are waived.
     log().warn({ shop: shop.domain }, "billing skipped: app distribution is not public yet");
     await db.shop.update({ where: { id: shop.id }, data: { billingWaived: true } });
     clearPlanCache(shop.domain);
@@ -89,7 +111,7 @@ export async function startUpgrade(db: Db, admin: AdminGraphql, shop: Shop): Pro
 
 /** Choosing Free: cancels any active subscription, records the choice and switches the digest off. */
 export async function chooseFree(db: Db, admin: AdminGraphql, shop: Shop): Promise<{ error?: string }> {
-  if (!shop.billingWaived) {
+  if (!(shop.billingWaived && isWaiverShop(shop.domain))) {
     const active = (await fetchActiveSubscriptions(admin)).filter((s) => s.name === MONTHLY_PLAN);
     for (const sub of active) {
       const err = await cancelSubscription(admin, sub.id);

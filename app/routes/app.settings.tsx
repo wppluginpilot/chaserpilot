@@ -2,6 +2,7 @@
  * Settings: timezone, default due offset, daily digest, known assignees and
  * "Delete all my data".
  */
+import { useEffect, useState } from "react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
 import { Form, useActionData, useFetcher, useLoaderData, useNavigation } from "react-router";
 
@@ -55,8 +56,8 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   }
   if (intent === "add-assignee") {
     return guard(async () => {
-      await addAssignee(ctx.db, ctx.shopId, ctx.effectivePlan, str(form, "name"));
-      return { ok: true as const, message: "Assignee added" };
+      const { added } = await addAssignee(ctx.db, ctx.shopId, ctx.effectivePlan, str(form, "name"));
+      return { ok: true as const, message: added ? "Assignee added" : "That name is already on your list" };
     });
   }
   if (intent === "remove-assignee") {
@@ -83,6 +84,11 @@ export default function Settings() {
   useActionToast(fetcher.data);
   const fields = result && !result.ok && "fields" in result && result.fields ? (result.fields as Record<string, string>) : {};
   const paid = d.plan === "PAID";
+  const [nameKey, setNameKey] = useState(0);
+  useEffect(() => {
+    // Clear the "Add a name" box after a successful add (or a no-op duplicate).
+    if (result && result.ok && "message" in result && /assignee added|already on your list/i.test(String(result.message))) setNameKey((k) => k + 1);
+  }, [result]);
   const saving = navigation.state === "submitting" && navigation.formData?.get("intent") === "save";
 
   return (
@@ -156,7 +162,7 @@ export default function Settings() {
               <Form method="post">
                 <input type="hidden" name="intent" value="add-assignee" />
                 <s-stack direction="inline" gap="small" alignItems="end">
-                  <s-text-field name="name" label="Add a name" maxLength={60} />
+                  <s-text-field key={nameKey} name="name" label="Add a name" maxLength={60} />
                   <s-button type="submit">Add</s-button>
                 </s-stack>
               </Form>

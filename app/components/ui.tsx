@@ -77,20 +77,33 @@ export function Stat({ label, value, hint, href }: { label: string; value: strin
  * same-origin fetches, so fetch the file and hand the browser a blob.
  */
 export async function downloadCsv(path: string, filename: string) {
-  const response = await fetch(path);
-  if (!response.ok) {
-    window.shopify?.toast.show("Export failed. Please try again.", { isError: true });
-    return;
+  const fail = () => window.shopify?.toast.show("Export failed. Please try again.", { isError: true });
+  try {
+    const response = await fetch(path, { credentials: "same-origin" });
+    if (!response.ok) {
+      if (response.status === 402) window.shopify?.toast.show("CSV export is part of the Paid plan.", { isError: true });
+      else fail();
+      return;
+    }
+    // Force a CSV type so the blob is saved, not rendered, whatever the proxy did to the headers.
+    const blob = new Blob([await response.blob()], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    try {
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      link.rel = "noopener";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch {
+      // Sandboxed frame blocked the download attribute: open the file in a new tab instead.
+      if (!window.open(url, "_blank", "noopener")) fail();
+    }
+    setTimeout(() => URL.revokeObjectURL(url), 60_000);
+  } catch {
+    fail();
   }
-  const blob = await response.blob();
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 /**
