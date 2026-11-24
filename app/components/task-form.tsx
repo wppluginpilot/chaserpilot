@@ -84,7 +84,7 @@ export function TaskForm({
         ) : (
           <s-banner tone="info" heading="Assignees and repeating follow-ups are Paid features">
             <s-paragraph>
-              Upgrade for assignees, recurring follow-ups, templates, the daily digest and CSV export. <s-link href="/app/plan">See plans</s-link>
+              Upgrade for assignees, recurring follow-ups, templates, the Today digest view, with optional daily email, and CSV export. <s-link href="/app/plan">See plans</s-link>
             </s-paragraph>
           </s-banner>
         )}

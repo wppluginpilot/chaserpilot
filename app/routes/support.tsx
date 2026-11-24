@@ -13,7 +13,7 @@ const FIXES = [
   { q: "I don't see the Follow-ups block on an order.", a: "Open the order, then the page's block settings in Shopify admin, and add ChaserPilot's Follow-ups block to the page. The Add follow-up action is under More actions." },
   { q: "The queue shows the wrong day.", a: "Due dates follow the timezone in ChaserPilot's Settings, which starts as your Shopify timezone. Change it there." },
   { q: "I can't add another follow-up.", a: `The Free plan allows ${FREE_OPEN_LIMIT} open follow-ups. Finished ones don't count; mark some done or upgrade on the Plan page.` },
-  { q: "I don't get the daily email.", a: "The daily digest is a Paid feature. Check it is switched on in Settings, look in your spam folder, and note nothing is sent on days when nothing is due." },
+  { q: "I don't get the daily email.", a: "The daily email is optional on the Paid plan (Today digest view, with optional daily email), and it is not switched on for the app yet, so nothing is emailed for now. The Today page in the app shows the same list. Once email is live, check it is switched on in Settings, look in your spam folder, and note nothing is sent on days when nothing is due." },
   { q: "How much does ChaserPilot cost?", a: `Free for ${FREE_OPEN_LIMIT} open follow-ups. Paid is $${PLAN_PRICE.toFixed(2)} every 30 days, billed through your Shopify invoice.` },
 ];
 

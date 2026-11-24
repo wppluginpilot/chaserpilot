@@ -5,7 +5,7 @@ import { FAQ, GUIDE } from "../../server/domain/guide";
 
 export const meta: MetaFunction = () => [
   { title: "Documentation · ChaserPilot" },
-  { name: "description", content: "Set up ChaserPilot: the Add follow-up action, the Follow-ups block, the queue, recurring follow-ups, templates, the daily digest and CSV export." },
+  { name: "description", content: "Set up ChaserPilot: the Add follow-up action, the Follow-ups block, the queue, recurring follow-ups, templates, the Today digest view, with optional daily email, and CSV export." },
 ];
 
 export default function Docs() {

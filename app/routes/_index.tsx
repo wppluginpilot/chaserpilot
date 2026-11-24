@@ -36,7 +36,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 const STEPS = [
   { title: "Add it where the work happens", body: "On any order or customer page in Shopify admin, choose More actions > Add follow-up. Title, due date, done. No copying order numbers." },
   { title: "Work one list every morning", body: "Overdue, Today, This week and Later in one queue. Filter by assignee or tag. Mark done or snooze with one click." },
-  { title: "Let it come to you", body: "Recurring follow-ups, reusable templates and an optional daily email of what is due, so nothing slips." },
+  { title: "Let it come to you", body: "Recurring follow-ups, reusable templates and the Today digest view with an optional daily email of what is due, so nothing slips." },
 ];
 
 const FEATURES = [

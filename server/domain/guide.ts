@@ -21,7 +21,7 @@ export const GUIDE: GuideSection[] = [
     steps: [
       "Add your first follow-up from the Follow-ups page (Add follow-up), or open any order in Shopify and choose More actions > Add follow-up.",
       "Open an order and find the Follow-ups block. If you don't see it, open the page's block settings in Shopify and add ChaserPilot's Follow-ups block.",
-      "Work your queue every morning: Overdue first, then Today. Mark things Done or Snooze them. On the Paid plan, turn on the daily digest in Settings.",
+      "Work your queue every morning: Overdue first, then Today. Mark things Done or Snooze them. On the Paid plan, use the Today digest view and optionally turn on the daily email in Settings.",
     ],
   },
   {
@@ -57,7 +57,7 @@ export const GUIDE: GuideSection[] = [
   },
   {
     id: "digest",
-    heading: "Daily digest (Paid)",
+    heading: "Today digest view, with optional daily email (Paid)",
     paragraphs: [
       "Once a day, at the hour you choose in your store's timezone, ChaserPilot emails your store owner address (and one optional extra address) a list of what is overdue and due today. Nothing is sent on days when nothing is due. Every email has a link to turn the digest off.",
       "If email isn't available, the Today page in the app shows the same list.",
@@ -87,7 +87,7 @@ export const GUIDE: GuideSection[] = [
     heading: "Free and Paid",
     paragraphs: [
       `Free: up to ${FREE_OPEN_LIMIT} open follow-ups, the queue, the order and customer actions and blocks, snooze and tags. Finished follow-ups don't count.`,
-      `Paid: $${PLAN_PRICE.toFixed(2)} every 30 days, billed by Shopify. Unlimited open follow-ups, assignees, recurring follow-ups, templates, the daily digest and CSV export.`,
+      `Paid: $${PLAN_PRICE.toFixed(2)} every 30 days, billed by Shopify. Unlimited open follow-ups, assignees, recurring follow-ups, templates, the Today digest view, with optional daily email, and CSV export.`,
       "If you go back to Free, everything is kept; repeating follow-ups stop creating new ones and the digest turns off.",
     ],
   },

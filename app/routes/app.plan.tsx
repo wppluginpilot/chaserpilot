@@ -141,7 +141,7 @@ export default function Plan() {
           </s-section>
         </s-grid>
 
-        <s-text color="subdued">After a downgrade everything is kept: paid fields on existing follow-ups stay visible, repeating follow-ups stop creating new ones and the daily digest is switched off.</s-text>
+        <s-text color="subdued">After a downgrade everything is kept: paid fields on existing follow-ups stay visible, repeating follow-ups stop creating new ones and the daily email is switched off (the Today view stays available).</s-text>
         <s-button href="/app">Back to follow-ups</s-button>
       </s-stack>
     </s-page>

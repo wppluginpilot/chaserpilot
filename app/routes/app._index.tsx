@@ -135,13 +135,13 @@ export default function Queue() {
               </s-stack>
               <s-stack direction="inline" gap="small" alignItems="center">
                 <s-badge tone={d.checklist.step3 ? "success" : "neutral"}>{d.checklist.step3 ? "Done" : "3"}</s-badge>
-                <s-text>Turn on the daily digest.</s-text>
+                <s-text>Today digest view, with optional daily email.</s-text>
                 {!d.checklist.step3 ? (
                   d.plan === "PAID" ? (
                     <s-link href="/app/settings">Open settings</s-link>
                   ) : (
                     <s-text color="subdued">
-                      The digest is part of the Paid plan. <s-link href="/app/plan">Upgrade</s-link>
+                      The Today digest view and optional daily email are part of the Paid plan. <s-link href="/app/plan">Upgrade</s-link>
                     </s-text>
                   )
                 ) : null}

@@ -112,16 +112,16 @@ export default function Settings() {
               </s-stack>
             </s-section>
 
-            <s-section heading="Daily digest email">
+            <s-section heading="Today digest view, with optional daily email">
               {!paid ? (
-                <s-banner tone="info" heading="The daily digest is a Paid feature">
+                <s-banner tone="info" heading="The Today digest view and daily email are Paid features">
                   <s-paragraph>
                     Get one email each morning listing what is overdue and due today. <s-link href="/app/plan">See plans</s-link>
                   </s-paragraph>
                 </s-banner>
               ) : null}
               {paid && !d.emailOn ? (
-                <s-banner tone="warning" heading="Digest email is not available yet">
+                <s-banner tone="warning" heading="The daily email is not available yet">
                   <s-paragraph>
                     Email sending isn&rsquo;t switched on for this app right now, so nothing will be emailed. Your <s-link href="/app/today">Today view</s-link> shows the same list. Your setting
                     is saved and takes effect once email is available.

@@ -29,5 +29,7 @@ npm run verify          # typecheck + lint + tests (unit + integration on the de
 ## Billing
 Two plans. Free: 25 open follow-ups, no subscription. Paid: "ChaserPilot Monthly", $9.95 every 30 days, no trial. `billing.check` always uses `isTest: true`; the subscription is created by `appSubscriptionCreate` inside the plan action (test = development store). A store with no plan goes to `/app/plan`. While the app is unlisted Shopify rejects charges; only shops listed in `BILLING_WAIVER_SHOPS` (comma-separated domains, default empty) are then given Paid without a charge. Any other store gets a clear error and the stored `billingWaived` flag is ignored for it.
 
+Paid plan features: unlimited open follow-ups, assignees, recurring follow-ups, templates, Today digest view, with optional daily email (email is off until `MAIL_PROVIDER` is set, see docs/email-setup.md), CSV export.
+
 ## Deploy
 `render.yaml` (free, Ohio, `/health` without DB). Set `DATABASE_URL` (Neon direct URL, `sslmode=require`), `SHOPIFY_API_KEY`, `SHOPIFY_API_SECRET`, `SHOPIFY_APP_URL`, and optionally `MAIL_PROVIDER`/`MAIL_API_KEY`/`MAIL_FROM`. Then `shopify app config link` and `npm run deploy`.

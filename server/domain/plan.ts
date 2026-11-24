@@ -13,6 +13,6 @@ export const PAID_FEATURES = [
   "Assignees",
   "Recurring follow-ups",
   "Templates",
-  "Daily digest email",
+  "Today digest view, with optional daily email",
   "CSV export",
 ] as const;
