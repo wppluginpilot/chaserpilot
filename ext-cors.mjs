@@ -16,8 +16,11 @@ export const EXT_CORS_HEADERS = {
 
 /** Express middleware: CORS headers on every /ext response, 204 for preflight. */
 export function extCors(req, res, next) {
-  for (const [k, v] of Object.entries(EXT_CORS_HEADERS)) res.setHeader(k, v);
+  // Only the preflight is answered here. Real responses get their CORS headers
+  // from withExtCors in the route; setting them here too produced duplicate
+  // "Access-Control-Allow-Origin: *, *" which browsers reject outright.
   if (req.method === "OPTIONS") {
+    for (const [k, v] of Object.entries(EXT_CORS_HEADERS)) res.setHeader(k, v);
     res.statusCode = 204;
     res.end();
     return;
