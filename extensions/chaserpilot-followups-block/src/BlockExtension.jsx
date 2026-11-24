@@ -39,8 +39,8 @@ function Extension() {
     else await load();
   };
 
-  // Opens this page's "Add follow-up" action extension.
-  const addFollowUp = () => shopify.navigation.navigate("extension:chaserpilot-add-followup");
+  // Opens this page's "Add follow-up" action extension: documented `extension:<handle>/<target>` protocol.
+  const actionTarget = shopify.extension.target.replace(".block.", ".action.");
 
   return (
     <s-admin-block heading="Follow-ups">
@@ -81,7 +81,7 @@ function Extension() {
             ))}
           </s-stack>
         ) : null}
-        <s-button onClick={addFollowUp}>Add follow-up</s-button>
+        <s-button href={`extension:chaserpilot-add-followup/${actionTarget}`}>Add follow-up</s-button>
       </s-stack>
     </s-admin-block>
   );

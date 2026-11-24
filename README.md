@@ -1,9 +1,9 @@
-# ChaserPilot: Area & Tile Calculator
+# ChaserPilot: Follow-up Tasks
 
-Shopify app by WP Plugin Pilot. Shoppers enter room sizes on the product page and get the exact boxes, rolls, cans or bags added to the cart. No AI: detection is regular expressions, the maths is deterministic.
+Shopify app by WP Plugin Pilot. Add a follow-up to any order or customer from the Shopify admin and work one due-today queue. Plain deterministic logic: no AI.
 
 ## Stack
-React Router 7 + `@shopify/shopify-app-react-router`, Polaris web components, App Bridge, Prisma + Postgres, vitest, Docker on Render (free) with Neon (free). Theme app extension with two blocks (`calculator`, `price-per-area`); storefront JS built with esbuild from `storefront/` and the shared domain module in `server/domain/`.
+React Router 7 + `@shopify/shopify-app-react-router`, Polaris web components, App Bridge, Prisma + Postgres, vitest, Docker on Render (free) with Neon (free). Two admin UI extensions (Add follow-up action, Follow-ups block) on the order and customer pages. No storefront code.
 
 ## Local development
 ```bash
@@ -16,21 +16,18 @@ npm run dev             # shopify app dev
 
 ## Checks
 ```bash
-npm run verify          # typecheck + tests (unit + integration on the dev Postgres) + build
-npm run build:storefront
-shopify app build       # also runs theme check on the theme app extension
+npm run verify          # typecheck + lint + tests (unit + integration on the dev Postgres) + build
 ```
 
 ## Layout
-- `server/domain/` pure logic shared by admin, server and storefront: units, calculator core (`calc-core.ts`), cheapest-mix optimizer, wallpaper strip method, coverage detection, metafield JSON, CSV.
-- `server/services/` sync, suggestions, setup/bulk, publishing (metafieldsSet ≤ 25 per call), settings, analytics, CSV import/export, billing, jobs.
-- `server/shopify/admin.server.ts` every Admin GraphQL operation (validated against 2026-07).
-- `app/routes/` admin pages (`app.*`), app proxy (`proxy.*`), webhooks, public pages.
-- `extensions/chaserpilot-storefront/` theme app extension (blocks, snippet, assets, locales en/fr/de/es).
-- `brand/generate.mjs` icon, logos, favicons, social card. `brand/listing/listing-copy.md` App Store copy.
+- `server/domain/` pure logic: dates, recurrence, validation (CSV escaping), limits, digest + unsubscribe token.
+- `server/services/` tasks, templates, settings, digest, mailer, billing, jobs, compliance.
+- `server/shopify/admin.server.ts` every Admin GraphQL operation (API 2026-07).
+- `app/routes/` admin pages (`app.*`), extension endpoints (`ext.*`), webhooks, public pages.
+- `extensions/` the action and block admin UI extensions.
 
 ## Billing
-One plan, ChaserPilot Monthly, $12.95 / 30 days, 14-day trial. `billing.check` always uses `isTest: true` (review stores' charges are test charges); `billing.request` uses `isTest` = development store. No plan → `/app/plan`.
+Two plans. Free: 25 open follow-ups, no subscription. Paid: "ChaserPilot Monthly", $9.95 every 30 days, no trial. `billing.check` always uses `isTest: true`; the subscription is created by `appSubscriptionCreate` inside the plan action (test = development store). A store with no plan goes to `/app/plan`.
 
 ## Deploy
-`render.yaml` (free, Ohio, `/health` without DB). Set `DATABASE_URL` (Neon direct URL, `sslmode=require`), `SHOPIFY_API_KEY`, `SHOPIFY_API_SECRET`, `SHOPIFY_APP_URL`. Then `shopify app config link` and `npm run deploy`.
+`render.yaml` (free, Ohio, `/health` without DB). Set `DATABASE_URL` (Neon direct URL, `sslmode=require`), `SHOPIFY_API_KEY`, `SHOPIFY_API_SECRET`, `SHOPIFY_APP_URL`, and optionally `MAIL_PROVIDER`/`MAIL_API_KEY`/`MAIL_FROM`. Then `shopify app config link` and `npm run deploy`.

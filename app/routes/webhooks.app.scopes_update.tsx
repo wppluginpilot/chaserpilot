@@ -8,7 +8,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const { payload, session } = await authenticate.webhook(request);
   const current = (payload as { current?: string[] }).current;
   if (session && Array.isArray(current)) {
-    await prisma.session.update({ where: { id: session.id }, data: { scope: current.join(",") } });
+    await prisma.session.updateMany({ where: { id: session.id }, data: { scope: current.join(",") } });
   }
   return new Response();
 };

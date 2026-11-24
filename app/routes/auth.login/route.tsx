@@ -7,33 +7,23 @@
  * @shopify/shopify-app-react-router v2, `AppProvider` always mounts App Bridge and
  * requires an API key, so wrapping this page in it would be wrong on both counts.
  */
-import { useState } from "react";
-import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from "react-router";
-import { Form, useActionData, useLoaderData, useNavigation } from "react-router";
+import type { LoaderFunctionArgs, MetaFunction } from "react-router";
 
 import { login } from "../../shopify.server";
-import { loginErrorMessage } from "./error.server";
 
 export const meta: MetaFunction = () => [{ title: "Log in · ChaserPilot" }];
 
+/**
+ * Shopify App Store rules forbid asking merchants to type their shop domain, so
+ * there is no form here. Links that already carry ?shop= (from the Shopify
+ * admin) still go straight to OAuth; everyone else is pointed at the admin.
+ */
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  return { errors: loginErrorMessage(await login(request)) };
-};
-
-export const action = async ({ request }: ActionFunctionArgs) => {
-  return { errors: loginErrorMessage(await login(request)) };
+  if (new URL(request.url).searchParams.get("shop")) await login(request);
+  return null;
 };
 
 export default function Auth() {
-  const loaderData = useLoaderData<typeof loader>();
-  const actionData = useActionData<typeof action>();
-  const navigation = useNavigation();
-  const [shop, setShop] = useState("");
-
-  const { errors } = actionData ?? loaderData;
-  const isSubmitting = navigation.state === "submitting";
-  const errorId = errors.shop ? "shop-error" : undefined;
-
   return (
     <main className="login">
       <div className="login__card">
@@ -43,42 +33,13 @@ export default function Auth() {
             <img src="/brand/logo.svg" alt="ChaserPilot" width="144" height="40" />
           </picture>
         </h1>
-        <p className="login__subtitle">
-          Never forget what you promised a customer.
+        <p className="login__subtitle">Never forget what you promised a customer.</p>
+        <p className="login__hint">
+          Open ChaserPilot from <strong>Apps</strong> in your Shopify admin. New to ChaserPilot? Install it from the Shopify App Store.
         </p>
-
-        <Form method="post" className="login__form">
-          <label className="login__label" htmlFor="shop">
-            Shop domain
-          </label>
-          <input
-            id="shop"
-            name="shop"
-            className="login__input"
-            value={shop}
-            onChange={(event) => setShop(event.currentTarget.value)}
-            placeholder="example.myshopify.com"
-            autoComplete="on"
-            autoCapitalize="off"
-            spellCheck={false}
-            required
-            aria-describedby={errorId ?? "shop-hint"}
-            aria-invalid={errors.shop ? true : undefined}
-          />
-          {errors.shop ? (
-            <p id="shop-error" className="login__error" role="alert">
-              {errors.shop}
-            </p>
-          ) : (
-            <p id="shop-hint" className="login__hint">
-              Enter the myshopify.com domain of the store you want to open.
-            </p>
-          )}
-
-          <button type="submit" className="login__button" disabled={isSubmitting}>
-            {isSubmitting ? "Opening…" : "Log in"}
-          </button>
-        </Form>
+        <a className="login__button" href="https://admin.shopify.com">
+          Go to Shopify admin
+        </a>
       </div>
 
       {/* Scoped to this standalone page; the embedded app inherits admin styling. */}
@@ -121,6 +82,9 @@ export default function Auth() {
         .login__hint { margin: 2px 0 12px; font-size: 12px; color: #616161; }
         .login__error { margin: 2px 0 12px; font-size: 12px; color: #c5280c; font-weight: 500; }
         .login__button {
+          display: inline-block;
+          text-decoration: none;
+          text-align: center;
           font: inherit;
           font-weight: 600;
           padding: 10px 16px;

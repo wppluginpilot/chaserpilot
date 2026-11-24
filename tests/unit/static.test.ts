@@ -107,3 +107,10 @@ describe("extensions", () => {
     expect(all).toContain('api_version = "2026-07"');
   });
 });
+
+describe("login page", () => {
+  it("has no shop-domain form", () => {
+    const src = readFileSync(path.join(root, "app/routes/auth.login/route.tsx"), "utf8");
+    expect(src).not.toMatch(/<Form|<form|<input|name="shop"/);
+  });
+});
