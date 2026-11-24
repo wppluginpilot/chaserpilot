@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <defs><linearGradient id="ap-g" x1="6" y1="2" x2="58" y2="62" gradientUnits="userSpaceOnUse">
+    <stop offset="0" stop-color="#14B8A6"/><stop offset=".55" stop-color="#0F766E"/><stop offset="1" stop-color="#0B3F3B"/>
+  </linearGradient></defs>
+  <rect width="64" height="64" rx="15" fill="url(#ap-g)"/>
+  <rect x="14" y="11" width="16" height="16" rx="3" fill="#FFFFFF" opacity="0.96"/><rect x="32" y="11" width="16" height="16" rx="3" fill="#FFFFFF" opacity="0.82"/><rect x="14" y="29" width="16" height="16" rx="3" fill="#FFFFFF" opacity="0.82"/><rect x="32.75" y="29.75" width="14.5" height="14.5" rx="2.5" fill="none" stroke="#FFFFFF" stroke-width="1.5" stroke-dasharray="2.4 2" opacity=".75"/><rect x="35" y="26" width="16" height="16" rx="3" fill="#F59E0B" opacity="1" transform="rotate(-8 43 34)"/><path d="M14 52.5H48M14 49.5v6M48 49.5v6" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" fill="none" opacity=".95"/>
+</svg>

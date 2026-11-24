@@ -1,0 +1,47 @@
+# ChaserPilot - Shopify app configuration.
+#
+# client_id and the URLs are filled in by `shopify app config link` / deploy.
+# Scopes and webhooks are checked in so every change goes through review.
+
+name = "ChaserPilot"
+handle = "chaserpilot"
+client_id = ""
+application_url = "https://chaserpilot.onrender.com"
+embedded = true
+
+[access_scopes]
+#   read_orders    - read the order number (order name, e.g. #1043) when a follow-up
+#                    is attached to an order. Nothing else on the order is selected.
+#                    Without read_all_orders Shopify returns only the last 60 days.
+#   read_customers - confirm the customer ID when a follow-up is attached to a
+#                    customer. No name, email, phone or address field is selected.
+scopes = "read_orders,read_customers"
+
+[auth]
+redirect_urls = ["https://chaserpilot.onrender.com/auth/callback"]
+
+[webhooks]
+api_version = "2026-07"
+
+  [[webhooks.subscriptions]]
+  topics = ["app/uninstalled"]
+  uri = "/webhooks/app/uninstalled"
+
+  [[webhooks.subscriptions]]
+  topics = ["app/scopes_update"]
+  uri = "/webhooks/app/scopes_update"
+
+  [[webhooks.subscriptions]]
+  uri = "/webhooks/compliance/customers-data-request"
+  compliance_topics = ["customers/data_request"]
+
+  [[webhooks.subscriptions]]
+  uri = "/webhooks/compliance/customers-redact"
+  compliance_topics = ["customers/redact"]
+
+  [[webhooks.subscriptions]]
+  uri = "/webhooks/compliance/shop-redact"
+  compliance_topics = ["shop/redact"]
+
+[build]
+automatically_update_urls_on_dev = true

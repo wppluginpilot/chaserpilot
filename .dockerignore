@@ -1,0 +1,10 @@
+node_modules
+.git
+.env
+.env.*
+build
+.react-router
+.devpg
+.shopify
+coverage
+tests

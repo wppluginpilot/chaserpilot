@@ -1,0 +1,153 @@
+// ChaserPilot - PostgreSQL schema.
+//
+// Conventions:
+//   * Every tenant-owned row carries shopId, every query filters on it, and
+//     everything cascades from Shop so shop/redact erases a store in one delete.
+//   * Due dates are calendar dates (@db.Date) in the shop's timezone.
+//   * Only Level 1 protected data is stored: order names, GIDs and the free text
+//     the merchant types. Never customer names, emails, phones or addresses.
+//   * The plan is read from Shopify billing; the only plan state stored here is
+//     "this store chose Free" (freeSelectedAt) and the unlisted-app waiver.
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Shopify session storage (column set dictated by the Prisma adapter, incl.
+// the refresh-token columns used by expiring offline access tokens).
+model Session {
+  id                  String    @id
+  shop                String
+  state               String
+  isOnline            Boolean   @default(false)
+  scope               String?
+  expires             DateTime?
+  accessToken         String
+  userId              BigInt?
+  firstName           String?
+  lastName            String?
+  email               String?
+  accountOwner        Boolean   @default(false)
+  locale              String?
+  collaborator        Boolean?  @default(false)
+  emailVerified       Boolean?  @default(false)
+  refreshToken        String?
+  refreshTokenExpires DateTime?
+
+  @@index([shop])
+}
+
+enum SubjectType {
+  ORDER
+  CUSTOMER
+  NONE
+}
+
+enum TaskStatus {
+  OPEN
+  DONE
+}
+
+model Shop {
+  id               String    @id @default(cuid())
+  domain           String    @unique
+  name             String?
+  ownerEmail       String?
+  timezone         String    @default("UTC")
+  digestEnabled    Boolean   @default(false)
+  digestHour       Int       @default(8)
+  digestExtraTo    String?
+  defaultDueDays   Int       @default(1)
+  onboardingDone   Json      @default("{}")
+  // Set when the merchant picks the Free plan on /app/plan.
+  freeSelectedAt   DateTime?
+  // Set only when Shopify refuses billing because the app is not public yet
+  // (the developer's own stores before listing).
+  billingWaived    Boolean   @default(false)
+  devStore         Boolean   @default(false)
+  uninstalledAt    DateTime?
+  createdAt        DateTime  @default(now())
+
+  tasks      Task[]
+  events     TaskEvent[]
+  templates  Template[]
+  assignees  Assignee[]
+  digestLogs DigestLog[]
+}
+
+model Task {
+  id          String      @id @default(cuid())
+  shopId      String
+  shop        Shop        @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  title       String
+  notes       String?
+  subjectType SubjectType @default(NONE)
+  subjectGid  String?
+  // Order name such as "#1043" (Level 1) or a label the merchant typed.
+  subjectName String?
+  dueOn       DateTime    @db.Date
+  status      TaskStatus  @default(OPEN)
+  assignee    String?
+  tags        String[]    @default([])
+  // {kind:"days"|"weekly"|"monthly", n, weekday, monthDay}
+  recurrence  Json?
+  seriesId    String?
+  completedAt DateTime?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([shopId, status, dueOn, id])
+  @@index([shopId, subjectGid])
+  @@index([shopId, seriesId])
+}
+
+model TaskEvent {
+  id     String   @id @default(cuid())
+  shopId String
+  shop   Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  taskId String
+  kind   String
+  detail String?
+  at     DateTime @default(now())
+
+  @@index([shopId, taskId])
+}
+
+model Template {
+  id      String   @id @default(cuid())
+  shopId  String
+  shop    Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  name    String
+  title   String
+  dueDays Int      @default(1)
+  tags    String[] @default([])
+  notes   String?
+
+  @@unique([shopId, name])
+}
+
+model Assignee {
+  id     String @id @default(cuid())
+  shopId String
+  shop   Shop   @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  name   String
+
+  @@unique([shopId, name])
+}
+
+model DigestLog {
+  id        String   @id @default(cuid())
+  shopId    String
+  shop      Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  localDate DateTime @db.Date
+  sentAt    DateTime @default(now())
+  count     Int
+
+  @@unique([shopId, localDate])
+}

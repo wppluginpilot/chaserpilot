@@ -1,0 +1,15 @@
+node_modules
+.env
+.env.*
+!.env.example
+/build
+.react-router
+.devpg
+.shopify
+*.log
+coverage
+brand/listing/captures/_*.html
+brand/listing/screencast/clips/
+brand/listing/screencast/check/
+brand/listing/screencast/admin/
+brand/listing/screencast/build/

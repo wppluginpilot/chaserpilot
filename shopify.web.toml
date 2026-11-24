@@ -1,0 +1,6 @@
+name = "chaserpilot"
+roles = ["frontend", "backend"]
+webhooks_path = "/webhooks"
+
+[commands]
+dev = "npm exec react-router dev"
