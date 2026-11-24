@@ -3,6 +3,7 @@ api_version = "2026-07"
 [[extensions]]
 name = "Add follow-up"
 handle = "chaserpilot-add-followup"
+uid = "91595214-13c4-1da1-3e4c-bfc648a5a8b56e0dc739"
 type = "ui_extension"
 description = "Add a ChaserPilot follow-up to this order or customer."
 
@@ -10,6 +11,3 @@ description = "Add a ChaserPilot follow-up to this order or customer."
   module = "./src/ActionExtension.jsx"
   target = "admin.order-details.action.render"
 
-  [[extensions.targeting]]
-  module = "./src/ActionExtension.jsx"
-  target = "admin.customer-details.action.render"

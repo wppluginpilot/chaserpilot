@@ -3,6 +3,7 @@ api_version = "2026-07"
 [[extensions]]
 name = "Follow-ups"
 handle = "chaserpilot-followups-block"
+uid = "a630073c-fb12-b341-000b-0410db162091e1bcef2a"
 type = "ui_extension"
 description = "Open ChaserPilot follow-ups for this order or customer."
 
@@ -10,6 +11,3 @@ description = "Open ChaserPilot follow-ups for this order or customer."
   module = "./src/BlockExtension.jsx"
   target = "admin.order-details.block.render"
 
-  [[extensions.targeting]]
-  module = "./src/BlockExtension.jsx"
-  target = "admin.customer-details.block.render"

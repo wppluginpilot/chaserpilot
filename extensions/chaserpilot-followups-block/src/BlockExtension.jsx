@@ -42,6 +42,8 @@ function Extension() {
   // Opens this page's "Add follow-up" action extension: documented `extension:<handle>/<target>` protocol.
   const actionTarget = shopify.extension.target.replace(".block.", ".action.");
 
+  const actionHandle = actionTarget.includes("customer") ? "chaserpilot-add-followup-customer" : "chaserpilot-add-followup";
+
   return (
     <s-admin-block heading="Follow-ups">
       <s-stack direction="block" gap="small">
@@ -81,7 +83,7 @@ function Extension() {
             ))}
           </s-stack>
         ) : null}
-        <s-button href={`extension:chaserpilot-add-followup/${actionTarget}`}>Add follow-up</s-button>
+        <s-button href={`extension:${actionHandle}/${actionTarget}`}>Add follow-up</s-button>
       </s-stack>
     </s-admin-block>
   );
