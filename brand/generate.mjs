@@ -1,5 +1,5 @@
 /**
- * AreaPilot brand assets — single source of truth.
+ * ChaserPilot brand assets — single source of truth.
  *
  * Run:  BRAND_TOOLS=<dir containing node_modules with @resvg/resvg-js and opentype.js>/ node brand/generate.mjs
  *
@@ -8,9 +8,8 @@
  * Wordmarks are real outlines (Inter SemiBold, OFL) so the logos look the
  * same with or without the font installed.
  *
- * The mark is a floor being laid: a 2×2 tile grid with the last tile (amber)
- * dropping into place, and a dimension line underneath — room size in,
- * boxes out. Palette: deep teal and amber, unlike any other app of ours.
+ * The mark is a task card: one follow-up done (check), two still open, and an amber
+ * due-clock badge on the corner. Palette: indigo and amber.
  */
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
@@ -29,13 +28,13 @@ mkdirSync(path.join(pub, "brand"), { recursive: true });
 mkdirSync(out, { recursive: true });
 
 export const COLORS = {
-  teal: "#0F766E", // primary
-  aqua: "#14B8A6", // light end of gradients
-  deep: "#0B3F3B", // deep end, hover
-  ink: "#0B2530", // text on light
-  amber: "#F59E0B", // accent: the tile being placed
-  sand: "#FDE8C4",
-  mist: "#E6F4F2",
+  teal: "#4F46E5", // primary (indigo)
+  aqua: "#818CF8", // light end of gradients
+  deep: "#312E81", // deep end, hover
+  ink: "#1E1B4B", // text on light
+  amber: "#F59E0B", // accent: the due clock
+  sand: "#FEF3C7",
+  mist: "#EEF2FF",
 };
 
 const tealGradient = (id, x1, y1, x2, y2) => `<linearGradient id="${id}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" gradientUnits="userSpaceOnUse">
@@ -43,17 +42,22 @@ const tealGradient = (id, x1, y1, x2, y2) => `<linearGradient id="${id}" x1="${x
   </linearGradient>`;
 
 /** The tiles and the dimension line, in a 64×64 box, for a dark (teal) background. */
-function markInner({ tile = "#FFFFFF", line = "#FFFFFF", accent = COLORS.amber } = {}) {
-  const t = (x, y, fill, opacity = 1, extra = "") => `<rect x="${x}" y="${y}" width="16" height="16" rx="3" fill="${fill}" opacity="${opacity}"${extra}/>`;
+function markInner({ tile = "#FFFFFF", line = "#FFFFFF", accent = COLORS.amber, dark = false } = {}) {
+  const ink = dark ? tile : COLORS.teal; // elements drawn on the card
+  const card = dark ? "#FFFFFF" : "#E0E7FF";
   return [
-    t(14, 11, tile, 0.96),
-    t(32, 11, tile, 0.82),
-    t(14, 29, tile, 0.82),
-    // The last tile, dropping into its place (dashed outline shows where it goes).
-    `<rect x="32.75" y="29.75" width="14.5" height="14.5" rx="2.5" fill="none" stroke="${tile}" stroke-width="1.5" stroke-dasharray="2.4 2" opacity=".75"/>`,
-    t(35, 26, accent, 1, ` transform="rotate(-8 43 34)"`),
-    // Dimension line with end ticks.
-    `<path d="M14 52.5H48M14 49.5v6M48 49.5v6" stroke="${line}" stroke-width="2" stroke-linecap="round" fill="none" opacity=".95"/>`,
+    `<rect x="12" y="8" width="38" height="46" rx="7" fill="${card}" opacity="${dark ? 0.97 : 1}"/>`,
+    // Row 1: done
+    `<circle cx="22.5" cy="20" r="4.6" fill="${dark ? COLORS.teal : COLORS.teal}"/><path d="M20.2 20.1l1.7 1.7 3-3.4" stroke="#FFFFFF" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" fill="none"/>`,
+    `<rect x="31" y="18.3" width="13" height="3.4" rx="1.7" fill="${COLORS.aqua}"/>`,
+    // Row 2 and 3: open
+    `<circle cx="22.5" cy="32" r="4.1" fill="none" stroke="${COLORS.teal}" stroke-width="1.8"/>`,
+    `<rect x="31" y="30.3" width="13" height="3.4" rx="1.7" fill="${COLORS.teal}" opacity=".55"/>`,
+    `<circle cx="22.5" cy="44" r="4.1" fill="none" stroke="${COLORS.teal}" stroke-width="1.8"/>`,
+    `<rect x="31" y="42.3" width="9" height="3.4" rx="1.7" fill="${COLORS.teal}" opacity=".55"/>`,
+    // Due clock badge
+    `<circle cx="47" cy="47" r="12" fill="${accent}" stroke="${dark ? COLORS.deep : "#FFFFFF"}" stroke-width="2.4"/>`,
+    `<path d="M47 40.5V47l4.4 2.6" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>`,
   ].join("");
 }
 
@@ -62,7 +66,7 @@ export function tile(size = 64) {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 64 64">
   <defs>${tealGradient("ap-g", 6, 2, 58, 62)}</defs>
   <rect width="64" height="64" rx="15" fill="url(#ap-g)"/>
-  ${markInner()}
+  ${markInner({ dark: true })}
 </svg>`;
 }
 
@@ -71,14 +75,14 @@ function appIcon() {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1200" viewBox="0 0 64 64">
   <defs>${tealGradient("ap-g", 0, 0, 64, 64)}</defs>
   <rect width="64" height="64" fill="url(#ap-g)"/>
-  <g transform="translate(32 33) scale(1.12) translate(-32 -33)">${markInner()}</g>
+  <g transform="translate(32 33) scale(1.1) translate(-32 -33)">${markInner({ dark: true })}</g>
 </svg>`;
 }
 
 /** Just the mark, for light backgrounds. */
 function bareMark() {
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="8 6 46 54">
-  ${markInner({ tile: COLORS.teal, line: COLORS.ink })}
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="8 4 52 60">
+  ${markInner({ dark: false })}
 </svg>`;
 }
 
@@ -119,7 +123,7 @@ function textRun(font, text, x, y, size, tracking = -0.02) {
 }
 
 function wordmark(size, x, y) {
-  const a = textRun(inter, "Area", x, y, size);
+  const a = textRun(inter, "Chaser", x, y, size);
   const b = textRun(inter, "Pilot", a.end, y, size);
   return { area: a.d, pilot: b.d, width: b.end - x };
 }
@@ -129,8 +133,8 @@ function logo({ onDark = false } = {}) {
   const accent = onDark ? COLORS.aqua : COLORS.teal;
   const w = wordmark(27, 56, 33.5);
   const width = Math.ceil(56 + w.width + 2);
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="48" viewBox="0 0 ${width} 48" role="img" aria-label="AreaPilot">
-  <title>AreaPilot</title>
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="48" viewBox="0 0 ${width} 48" role="img" aria-label="ChaserPilot">
+  <title>ChaserPilot</title>
   <g transform="scale(.75)">${tile().replace(/^<svg[^>]*>|<\/svg>$/g, "")}</g>
   <path fill="${text}" d="${w.area}"/><path fill="${accent}" d="${w.pilot}"/>
 </svg>`;
@@ -142,8 +146,8 @@ function stackedLogo({ onDark = false } = {}) {
   const probe = wordmark(32, 0, 0);
   const width = Math.ceil(Math.max(probe.width, 96) + 16);
   const w = wordmark(32, (width - probe.width) / 2, 134);
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="148" viewBox="0 0 ${width} 148" role="img" aria-label="AreaPilot">
-  <title>AreaPilot</title>
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="148" viewBox="0 0 ${width} 148" role="img" aria-label="ChaserPilot">
+  <title>ChaserPilot</title>
   <g transform="translate(${(width - 96) / 2} 0) scale(1.5)">${tile().replace(/^<svg[^>]*>|<\/svg>$/g, "")}</g>
   <path fill="${text}" d="${w.area}"/><path fill="${accent}" d="${w.pilot}"/>
 </svg>`;
@@ -152,8 +156,8 @@ function stackedLogo({ onDark = false } = {}) {
 /** Social card 1200×630 for og:image. */
 function ogCard() {
   const w = wordmark(92, 330, 300);
-  const line = textRun(interRegular, "Room size in, boxes in the cart.", 330, 390, 44, -0.01);
-  const sub = textRun(interRegular, "Area, tile, paint, wallpaper & mulch calculator for Shopify", 330, 452, 30, -0.005);
+  const line = textRun(interRegular, "Follow up on every order.", 330, 390, 44, -0.01);
+  const sub = textRun(interRegular, "Follow-up tasks for Shopify orders and customers", 330, 452, 30, -0.005);
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
   <defs>${tealGradient("og-g", 0, 0, 1200, 630)}</defs>
   <rect width="1200" height="630" fill="${COLORS.mist}"/>
