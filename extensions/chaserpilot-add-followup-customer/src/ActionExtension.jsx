@@ -1,16 +1,11 @@
 import { render } from "preact";
 import { useEffect, useState } from "preact/hooks";
 
+import { TEMPLATES_URL, api, tasksUrl } from "./api";
+
 export default async () => {
   render(<Extension />, document.body);
 };
-
-// fetch is authenticated with the session token automatically and resolved against the app URL.
-async function api(path, options) {
-  const res = await fetch(path, options);
-  const body = await res.json().catch(() => ({}));
-  return { ok: res.ok && body.ok !== false, body };
-}
 
 function Extension() {
   const { close, data } = shopify;
@@ -29,14 +24,21 @@ function Extension() {
   useEffect(() => {
     let alive = true;
     (async () => {
-      const [tasks, tpl] = await Promise.all([api(`/ext/tasks?subject=${encodeURIComponent(subjectGid)}`), api("/ext/templates")]);
-      if (!alive) return;
-      if (tasks.ok) {
-        setDueOn(tasks.body.defaultDue);
-        setPaid(tasks.body.plan === "PAID");
+      try {
+        const [tasks, tpl] = await Promise.all([api(tasksUrl(subjectGid)), api(TEMPLATES_URL)]);
+        if (!alive) return;
+        if (tasks.ok) {
+          setDueOn(tasks.body.defaultDue ?? "");
+          setPaid(tasks.body.plan === "PAID");
+        } else {
+          setError(tasks.body.error ?? "Couldn't load ChaserPilot. You can still try saving.");
+        }
+        if (tpl.ok) setTemplates(tpl.body.templates ?? []);
+      } catch {
+        if (alive) setError("Couldn't load ChaserPilot. You can still try saving.");
+      } finally {
+        if (alive) setLoading(false);
       }
-      if (tpl.ok) setTemplates(tpl.body.templates ?? []);
-      setLoading(false);
     })();
     return () => {
       alive = false;
@@ -59,17 +61,22 @@ function Extension() {
       return;
     }
     setSaving(true);
-    const res = await api("/ext/tasks", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title, dueOn, notes, assignee, tags, subjectGid }),
-    });
-    setSaving(false);
-    if (!res.ok) {
-      setError(res.body.error ?? "Couldn't save the follow-up. Please try again.");
-      return;
+    try {
+      const res = await api("/ext/tasks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, dueOn, notes, assignee, tags, subjectGid }),
+      });
+      if (!res.ok) {
+        setError(res.body.error ?? "Couldn't save the follow-up. Please try again.");
+        return;
+      }
+      close();
+    } catch {
+      setError("Couldn't save the follow-up. Please try again.");
+    } finally {
+      setSaving(false);
     }
-    close();
   };
 
   return (

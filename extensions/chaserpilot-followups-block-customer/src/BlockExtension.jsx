@@ -1,15 +1,11 @@
 import { render } from "preact";
 import { useCallback, useEffect, useState } from "preact/hooks";
 
+import { api, taskUrl, tasksUrl } from "./api";
+
 export default async () => {
   render(<Extension />, document.body);
 };
-
-async function api(path, options) {
-  const res = await fetch(path, options);
-  const body = await res.json().catch(() => ({}));
-  return { ok: res.ok && body.ok !== false, body };
-}
 
 function Extension() {
   const { data } = shopify;
@@ -17,26 +13,58 @@ function Extension() {
   const [state, setState] = useState({ loading: true, error: "", tasks: [], done: [] });
   const [busy, setBusy] = useState("");
 
-  // One small request per render.
+  // One small request per refresh. Never leaves the block in a loading state.
   const load = useCallback(async () => {
-    const res = await api(`/ext/tasks?subject=${encodeURIComponent(subjectGid)}`);
-    setState(
-      res.ok
-        ? { loading: false, error: "", tasks: res.body.tasks, done: res.body.done }
-        : { loading: false, error: res.body.error ?? "Couldn't load follow-ups.", tasks: [], done: [] },
-    );
+    try {
+      const res = await api(tasksUrl(subjectGid));
+      setState(
+        res.ok
+          ? { loading: false, error: "", tasks: res.body.tasks ?? [], done: res.body.done ?? [] }
+          : { loading: false, error: res.body.error ?? "Couldn't load follow-ups.", tasks: [], done: [] },
+      );
+    } catch {
+      setState({ loading: false, error: "Couldn't load follow-ups.", tasks: [], done: [] });
+    }
   }, [subjectGid]);
 
   useEffect(() => {
     load();
   }, [load]);
 
+  // There is no documented "action closed" callback for blocks, so refresh when the
+  // merchant returns to the page (focus / visibility) and poll briefly after they open
+  // the Add follow-up modal.
+  const [watchUntil, setWatchUntil] = useState(0);
+  useEffect(() => {
+    const refresh = () => {
+      if (typeof document === "undefined" || document.visibilityState !== "hidden") load();
+    };
+    const target = typeof window !== "undefined" ? window : null;
+    target?.addEventListener?.("focus", refresh);
+    if (typeof document !== "undefined") document.addEventListener?.("visibilitychange", refresh);
+    return () => {
+      target?.removeEventListener?.("focus", refresh);
+      if (typeof document !== "undefined") document.removeEventListener?.("visibilitychange", refresh);
+    };
+  }, [load]);
+  useEffect(() => {
+    if (!watchUntil) return undefined;
+    const timer = setInterval(() => {
+      if (Date.now() > watchUntil) clearInterval(timer);
+      else load();
+    }, 3000);
+    return () => clearInterval(timer);
+  }, [watchUntil, load]);
+
   const act = async (id, payload) => {
     setBusy(id);
-    const res = await api(`/ext/tasks/${id}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
-    setBusy("");
-    if (!res.ok) setState((s) => ({ ...s, error: res.body.error ?? "That didn't save. Please try again." }));
-    else await load();
+    try {
+      const res = await api(taskUrl(id), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+      if (!res.ok) setState((s) => ({ ...s, error: res.body.error ?? "That didn't save. Please try again." }));
+      else await load();
+    } finally {
+      setBusy("");
+    }
   };
 
   // Opens this page's "Add follow-up" action extension: documented `extension:<handle>/<target>` protocol.
@@ -83,7 +111,7 @@ function Extension() {
             ))}
           </s-stack>
         ) : null}
-        <s-button href={`extension:${actionHandle}/${actionTarget}`}>Add follow-up</s-button>
+        <s-button href={`extension:${actionHandle}/${actionTarget}`} onClick={() => setWatchUntil(Date.now() + 120000)}>Add follow-up</s-button>
       </s-stack>
     </s-admin-block>
   );

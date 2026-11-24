@@ -12,6 +12,8 @@ import compression from "compression";
 import express from "express";
 import morgan from "morgan";
 
+import { extCors } from "./ext-cors.mjs";
+
 const build = await import("./build/server/index.js");
 const app = express();
 
@@ -31,6 +33,9 @@ app.use(
     skip: (req) => req.path === "/health",
   }),
 );
+
+// Admin-extension API: CORS + preflight before the router.
+app.use("/ext", extCors);
 
 app.use(createRequestHandler({ build, mode: process.env.NODE_ENV }));
 

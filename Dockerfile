@@ -19,7 +19,7 @@ RUN npm ci --omit=dev && npm cache clean --force
 COPY prisma ./prisma
 RUN npx prisma generate
 COPY --from=build /app/build ./build
-COPY server.mjs ./
+COPY server.mjs ext-cors.mjs ./
 COPY scripts/migrate-with-retry.mjs ./scripts/
 USER node
 EXPOSE 3000
